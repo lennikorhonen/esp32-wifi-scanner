@@ -4,12 +4,15 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
 #include "nvs_flash.h"
 #include "portmacro.h"
+
+#define BLINK_LED 2
 
 char* auth_mode_to_char(wifi_auth_mode_t mode) {
     char *modes[] = {
@@ -58,13 +61,18 @@ void app_main(void)
         .show_hidden = true,
     };
 
+    gpio_reset_pin(BLINK_LED);
+    gpio_set_direction(BLINK_LED, GPIO_MODE_OUTPUT);
+
     ESP_LOGI(taskName, "Set up done. Starting scan now!"); // Log that we have done our setup
 
     // main loop
     for (;;) {
+        gpio_set_level(BLINK_LED, 1);
         // Scan wifi APs
         ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, true));
         ESP_LOGI(taskName, "Scan done. Getting scan info now!");
+        gpio_set_level(BLINK_LED, 0);
 
         uint16_t num_of_aps; // variable to save the number of found APs
         esp_wifi_scan_get_ap_num(&num_of_aps); // Store the number of found APs to num_of_aps
